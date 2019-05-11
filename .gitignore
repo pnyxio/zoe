@@ -1,0 +1,15 @@
+.gradle/
+.idea/
+build/
+gradle/
+gradlew
+gradlew.bat
+CMakeCache.txt
+CMakeFiles/
+cmake-build-debug/
+cmake-build-release/
+cmake_install.cmake
+libed25519ref10.a
+Makefile
+
+

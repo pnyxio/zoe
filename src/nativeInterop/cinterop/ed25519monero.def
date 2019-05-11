@@ -1,0 +1,3 @@
+headers = crypto-ops.h crypto-ops-added.h keccak.h
+headerFilter = **.h
+linkerOpts = -static -Lsrc/nativeInterop/cinterop/ed25519monero -led25519monero

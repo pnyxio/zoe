@@ -1,0 +1,86 @@
+plugins {
+    id 'kotlin-multiplatform' version '1.3.31'
+}
+repositories {
+    mavenCentral()
+}
+group 'io.pnyx'
+version '0.0.1'
+
+apply plugin: 'maven-publish'
+
+kotlin {
+    targets {
+        fromPreset(presets.jvm, 'jvm')
+        fromPreset(presets.js, 'js')
+        fromPreset(presets.linuxX64, 'linux') {
+            compilations.main {
+                outputKinds 'static' //executable static dynamic
+                linkerOpts '-Lsrc/nativeInterop/cinterop/ed25519monero', '-led25519monero', '-Bstatic' 
+                cinterops {
+                    ed25519monero {
+                        packageName 'io.pnyx.ed25519monero'
+                        includeDirs "src/nativeInterop/cinterop/ed25519monero"//, "/usr/include/x86_64-linux-gnu"
+                    }
+                }
+            }
+        }
+    }
+
+    sourceSets {
+        all {
+            languageSettings {
+                languageVersion = '1.3'
+                apiVersion = '1.3'
+                enableLanguageFeature('InlineClasses')
+                useExperimentalAnnotation('kotlin.ExperimentalUnsignedTypes')
+                progressiveMode = true
+            }
+        }
+        commonMain {
+            dependencies {
+                implementation 'org.jetbrains.kotlin:kotlin-stdlib-common'
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation 'org.jetbrains.kotlin:kotlin-test-common'
+                implementation 'org.jetbrains.kotlin:kotlin-test-annotations-common'
+            }
+        }
+        jvmMain {
+            dependencies {
+                implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+                implementation 'net.i2p.crypto:eddsa:0.3.0'
+                implementation 'org.bouncycastle:bcprov-jdk15on:1.59'
+                //implementation 'org.bouncycastle:bcpkix-jdk15on:1.59'
+
+            }
+        }
+        jvmTest {
+            dependencies {
+                implementation 'net.i2p.crypto:eddsa:0.3.0'
+                implementation 'net.corda:corda-core:3.3-corda'
+                implementation 'org.jetbrains.kotlin:kotlin-test'
+                implementation 'org.jetbrains.kotlin:kotlin-test-junit'
+            }
+        }
+        jsMain {
+            dependencies {
+                implementation 'org.jetbrains.kotlin:kotlin-stdlib-js'
+            }
+        }
+        jsTest {
+            dependencies {
+                implementation 'org.jetbrains.kotlin:kotlin-test-js'
+            }
+        }
+        linuxMain {
+        }
+        linuxTest {
+        }
+    }
+    wrapper {
+        gradleVersion = '4.8'
+    }
+}

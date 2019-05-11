@@ -1,0 +1,87 @@
+package io.pnyx.keddsa.math.ed25519
+
+import io.pnyx.keddsa.*
+import io.pnyx.keddsa.math.*
+import io.pnyx.keddsa.math.ed22519.Ed25519ScalarOps
+import org.hamcrest.core.IsEqual
+import org.junit.*
+
+import java.math.BigInteger
+
+import org.hamcrest.CoreMatchers.*
+import org.junit.Assert.assertThat
+
+
+class Ed25519ScalarOpsTest {
+
+    /**
+     * Test method for [net.i2p.crypto.eddsa.math.bigint.BigIntegerScalarOps.reduce].
+     */
+    @Test
+    fun testReduce() {
+        // Example from test case 1
+        val r =
+            Utils.hexToBytes("b6b19cd8e0426f5983fa112d89a143aa97dab8bc5deb8d5b6253c928b65272f4044098c2a990039cde5b6a4818df0bfb6e40dc5dee54248032962323e701352d")
+        assertThat(
+            scalarOps.reduce(r),
+            `is`(equalTo(Utils.hexToBytes("f38907308c893deaf244787db4af53682249107418afc2edc58f75ac58a07404")))
+        )
+    }
+
+    @Test
+    fun reduceReturnsExpectedResult() {
+        for (i in 0..999) {
+            // Arrange:
+            val bytes = MathUtils.getRandomByteArray(64)
+
+            // Act:
+            val reduced1 = scalarOps.reduce(bytes)
+            val reduced2 = MathUtils.reduceModGroupOrder(bytes)
+
+            // Assert:
+            Assert.assertThat(
+                MathUtils.toBigInteger(reduced1).compareTo(MathUtils.groupOrder),
+                IsEqual.equalTo(-1)
+            )
+            Assert.assertThat(MathUtils.toBigInteger(reduced1).compareTo(BigInteger("-1")), IsEqual.equalTo(1))
+            Assert.assertThat(reduced1, IsEqual.equalTo(reduced2))
+        }
+    }
+
+    /**
+     * Test method for [net.i2p.crypto.eddsa.math.bigint.BigIntegerScalarOps.multiplyAndAdd].
+     */
+    @Test
+    fun testMultiplyAndAdd() {
+        // Example from test case 1
+        val h = Utils.hexToBytes("86eabc8e4c96193d290504e7c600df6cf8d8256131ec2c138a3e7e162e525404")
+        val a = Utils.hexToBytes("307c83864f2833cb427a2ef1c00a013cfdff2768d980c0a3a520f006904de94f")
+        val r = Utils.hexToBytes("f38907308c893deaf244787db4af53682249107418afc2edc58f75ac58a07404")
+        val S = Utils.hexToBytes("5fb8821590a33bacc61e39701cf9b46bd25bf5f0595bbe24655141438e7a100b")
+        assertThat(scalarOps.multiplyAndAdd(h, a, r), `is`(equalTo(S)))
+    }
+
+    @Test
+    fun multiplyAndAddReturnsExpectedResult() {
+        for (i in 0..999) {
+            // Arrange:
+            val bytes1 = MathUtils.getRandomByteArray(32)
+            val bytes2 = MathUtils.getRandomByteArray(32)
+            val bytes3 = MathUtils.getRandomByteArray(32)
+
+            // Act:
+            val result1 = scalarOps.multiplyAndAdd(bytes1, bytes2, bytes3)
+            val result2 = MathUtils.multiplyAndAddModGroupOrder(bytes1, bytes2, bytes3)
+
+            // Assert:
+            Assert.assertThat(MathUtils.toBigInteger(result1).compareTo(MathUtils.groupOrder), IsEqual.equalTo(-1))
+            Assert.assertThat(MathUtils.toBigInteger(result1).compareTo(BigInteger("-1")), IsEqual.equalTo(1))
+            Assert.assertThat(result1, IsEqual.equalTo(result2))
+        }
+    }
+
+    companion object {
+
+        private val scalarOps = Ed25519ScalarOps()
+    }
+}
